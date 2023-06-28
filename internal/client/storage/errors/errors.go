@@ -11,6 +11,9 @@ var (
 	ErrTextEmpty          = "Text не заполнен"
 	ErrDescriptionEmpty   = "Description не заполнен"
 	ErrTextExist          = "Текст с таким name уже существует"
+	ErrLoginPasswordExist = "Логин пароль с таким name уже существует"
+	ErrLoginEmpty         = "Login не заполнен"
+	ErrPasswordEmpty      = "Password не заполнен"
 	ErrCardExist          = "Карта с таким name уже существует"
 	ErrPaymentSystemEmpty = "Payment System не заполнен"
 	ErrNumberEmpty        = "Number не заполнен"
@@ -21,4 +24,5 @@ var (
 	ErrCvcEmpty           = "CVC не заполнен"
 	ErrCvcIncorrect       = "CVC некорректный (пример: 123)"
 	ErrTextAdd            = "Ошибка при добавлении текста (попробуйте обновить данные)"
+	ErrLoginPasswordAdd   = "Ошибка при добавлении логин-пароль (попробуйте обновить данные)"
 )
