@@ -9,6 +9,7 @@ import (
 
 func (c Event) EventAuthentication(username, password string) (model.Token, error) {
 	c.logger.Info("Authentication")
+
 	token := model.Token{}
 	password, err := encryption.HashPassword(password)
 	if err != nil {
@@ -20,9 +21,17 @@ func (c Event) EventAuthentication(username, password string) (model.Token, erro
 		c.logger.Error(err)
 		return token, err
 	}
-	created, _ := service.ConvertTimestampToTime(authenticatedUser.AccessToken.CreatedAt)
-	endDate, _ := service.ConvertTimestampToTime(authenticatedUser.AccessToken.EndDateAt)
+
+	createdToken, _ := service.ConvertTimestampToTime(authenticatedUser.AccessToken.CreatedAt)
+	endDateToken, _ := service.ConvertTimestampToTime(authenticatedUser.AccessToken.EndDateAt)
 	token = model.Token{AccessToken: authenticatedUser.AccessToken.Token, UserID: authenticatedUser.AccessToken.UserId,
-		CreatedAt: created, EndDateAt: endDate}
+		CreatedAt: createdToken, EndDateAt: endDateToken}
+
+	err = service.CreateStorageNotExistsUser(c.config.FileFolder, token.UserID)
+	if err != nil {
+		c.logger.Error(err)
+		return token, err
+	}
+
 	return token, nil
 }

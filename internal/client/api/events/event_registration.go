@@ -9,6 +9,7 @@ import (
 
 func (c Event) EventRegistration(username, password string) (model.Token, error) {
 	c.logger.Info("Registration")
+
 	token := model.Token{}
 	password, err := encryption.HashPassword(password)
 	if err != nil {
@@ -20,9 +21,16 @@ func (c Event) EventRegistration(username, password string) (model.Token, error)
 		c.logger.Error(err)
 		return token, err
 	}
-	created, _ := service.ConvertTimestampToTime(registeredUser.AccessToken.CreatedAt)
-	endDate, _ := service.ConvertTimestampToTime(registeredUser.AccessToken.EndDateAt)
+	createdToken, _ := service.ConvertTimestampToTime(registeredUser.AccessToken.CreatedAt)
+	endDateToken, _ := service.ConvertTimestampToTime(registeredUser.AccessToken.EndDateAt)
 	token = model.Token{AccessToken: registeredUser.AccessToken.Token, UserID: registeredUser.AccessToken.UserId,
-		CreatedAt: created, EndDateAt: endDate}
+		CreatedAt: createdToken, EndDateAt: endDateToken}
+
+	err = service.CreateStorageUser(c.config.FileFolder, token.UserID)
+	if err != nil {
+		c.logger.Error(err)
+		return token, err
+	}
+
 	return token, nil
 }
