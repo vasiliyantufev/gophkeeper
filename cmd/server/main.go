@@ -7,12 +7,12 @@ import (
 
 	"github.com/sirupsen/logrus"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/api"
-	grpcHandler "github.com/vasiliyantufev/gophkeeper/internal/server/api/handlers"
+	grpc "github.com/vasiliyantufev/gophkeeper/internal/server/api/handlers"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/config"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/database"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/card"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/metadata"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/text"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/entity"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/file"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/token"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/user"
 )
@@ -27,18 +27,20 @@ func main() {
 		logger.Fatal(err)
 	} else {
 		defer db.Close()
+		db.CreateTablesMigration("file://../migrations")
 	}
 
 	userRepository := user.New(db)
-	textRepository := text.New(db)
-	metadataRepository := metadata.New(db)
-	cardRepository := card.New(db)
+	binaryRepository := file.New(db)
+	storage := storage.New("/tmp")
+	entityRepository := entity.New(db)
 	tokenRepository := token.New(db)
 
 	ctx, cnl := signal.NotifyContext(context.Background(), syscall.SIGTERM, syscall.SIGINT, syscall.SIGQUIT)
 	defer cnl()
 
-	handlerGrpc := grpcHandler.NewHandler(db, userRepository, textRepository, cardRepository, metadataRepository, tokenRepository, logger)
+	var handlerGrpc = grpc.NewHandler(db, config, userRepository, binaryRepository,
+		&storage, entityRepository, tokenRepository, logger)
 	go api.StartService(handlerGrpc, config, logger)
 
 	<-ctx.Done()

@@ -2,29 +2,31 @@ package handlers
 
 import (
 	"github.com/sirupsen/logrus"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/config"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/database"
 	grpc "github.com/vasiliyantufev/gophkeeper/internal/server/proto"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/card"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/metadata"
-	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/text"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/entity"
+	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/file"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/token"
 	"github.com/vasiliyantufev/gophkeeper/internal/server/storage/repositories/user"
 )
 
 type Handler struct {
 	database *database.DB
+	config   *config.Config
 	user     *user.User
-	text     *text.Text
-	card     *card.Card
-	metadata *metadata.Metadata
+	file     *file.File
+	storage  *storage.Storage
+	entity   *entity.Entity
 	token    *token.Token
 	logger   *logrus.Logger
 	grpc.UnimplementedGophkeeperServer
 }
 
 // NewHandler - creates a new grpc server instance
-func NewHandler(db *database.DB, userRepository *user.User, textRepository *text.Text, cardRepository *card.Card,
-	metadataRepository *metadata.Metadata, tokenRepository *token.Token, log *logrus.Logger) *Handler {
-	return &Handler{database: db, user: userRepository, text: textRepository, metadata: metadataRepository,
-		card: cardRepository, token: tokenRepository, logger: log}
+func NewHandler(db *database.DB, config *config.Config, userRepository *user.User,
+	binaryRepository *file.File, storage *storage.Storage, entityRepository *entity.Entity, tokenRepository *token.Token, log *logrus.Logger) *Handler {
+	return &Handler{database: db, config: config, user: userRepository, file: binaryRepository, storage: storage,
+		entity: entityRepository, token: tokenRepository, logger: log}
 }
